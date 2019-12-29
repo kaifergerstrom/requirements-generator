@@ -1,12 +1,18 @@
+
 import pip
+import cv2
+from difflib import get_close_matches
 
 filename = "test_import.py"
+
+def closeMatches(patterns, word): 
+    print(get_close_matches(word, patterns))
 
 def get_libraries(filename):
     keys = ['from', 'import', 'as']  # Keywords to determine import lines
     s_keys = [" import ", " as "]
     libraries = []  # Empty list to store final values
-    with open("test.py", "rb") as f:  # Open the python file
+    with open(filename, "rb") as f:  # Open the python file
     
         for line in f:  # Loop through all the lines
             line = line.decode("utf-8").strip()  # Decode the line to utf-8
@@ -31,3 +37,4 @@ def get_libraries(filename):
     return libraries  # Return the formatted list
 
 libraries = get_libraries(filename)
+installed = sorted(["%s==%s" % (i.key, i.version) for i in pip.get_installed_distributions()])
