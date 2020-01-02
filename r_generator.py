@@ -1,12 +1,5 @@
 
-import pip
-import cv2
-from difflib import get_close_matches
-
-filename = "test_import.py"
-
-def closeMatches(patterns, word): 
-    print(get_close_matches(word, patterns))
+import subprocess, sys, os
 
 def get_libraries(filename):
     keys = ['from', 'import', 'as']  # Keywords to determine import lines
@@ -34,7 +27,23 @@ def get_libraries(filename):
                     libraries.append(line)  # If passes all tests, append as is
 
     libraries = [s.strip() for s in libraries]  # Strip floating spaces off all strings in list
+    libraries = list(set(libraries))
     return libraries  # Return the formatted list
 
-libraries = get_libraries(filename)
-installed = sorted(["%s==%s" % (i.key, i.version) for i in pip.get_installed_distributions()])
+
+def create_requirements(libraries, output_path):
+    with open("{}/requirements.txt".format(output_path), "w+") as f:
+        for library in libraries:
+            try:
+                result = subprocess.check_output(['pip3', 'show', library]).decode('utf-8')
+                version = result.split('\n')[1].split('Version:')[1].strip()
+                f.write("{}=={}\n".format(library, version))
+            except:
+                pass
+
+
+if __name__ == "__main__":
+    file_path = sys.argv[1]
+    path = os.path.split(file_path)[0]
+    libraries = get_libraries(file_path)
+    create_requirements(libraries, path)
